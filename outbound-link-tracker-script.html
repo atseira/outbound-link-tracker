@@ -1,0 +1,110 @@
+<!-- Put this script in the footer -->
+
+<script>
+  // track_type choice:
+  GA_TRACK = "GA only";
+  FB_TRACK = "FB only";
+  GA_FB_TRACK = "GA and FB";
+
+  // ga_type choice
+  GA_TYPE_GTAG = "gtag";
+  GA_TYPE_GA = "ga";
+
+  // open_type choice
+  OPEN_IN_NEW_TAB = "open link in a new tab";
+  OPEN_IN_SAME_TAB = "open link in the same tab";
+
+  /**
+    * Look variable names above
+    */
+  track_type = FB_TRACK;
+  ga_type = GA_TYPE_GA;
+  open_type = OPEN_IN_NEW_TAB;
+
+  /**
+    * EXAMPLE
+    * By ID:
+    *   jquery_selector = "#<element's ID here>";
+    * By HREF:
+    *   jquery_selector = "a[href='<anchor's href here>']";
+    */
+  jquery_selector = "";
+
+  /**
+    * Good practice: fill all parameters as if there's GA & FB tracking
+    * Every param can be filled with anything except if you want to use
+    * FB Pixel Standard Events.
+    */
+  var tag_params = {
+    ga_e_category: "Outbound link",
+    ga_e_action: "click",
+    ga_e_label: "Outbound link click",
+
+    fb_event: "Lead", // FB standard events here
+    fb_name: "Outbound link click",
+    fb_category: "Outbound link"
+  }
+
+
+  // Do not modify the code below at all without permission.
+
+  url = jQuery(jquery_selector).attr("href");
+
+  function track_control () {
+    console.log("You choose to track with ".concat(track_type, "."));
+    if (track_type == FB_TRACK) {
+      fb_track();
+    } else {
+      ga_track();
+    }
+  }
+
+  function ga_track () {
+    console.log("Preparing GA tracker.");
+    console.log("GA tracker: ".concat(ga_type, "."));
+    if (ga_type == GA_TYPE_GTAG) {
+      gtag("event", tag_params.ga_e_action, {
+        "event_category": tag_params.ga_e_category,
+        "event_label": tag_params.ga_e_label,
+        "transport_type": "beacon",
+        "event_callback": fb_or_link()
+      });
+    } else {
+      ga("send", "event", tag_params.ga_e_category,
+         tag_params.ga_e_action, tag_params.ga_e_label, {
+        "transport_type": "beacon",
+        "event_callback": fb_or_link()
+      }
+        );
+    }
+  }
+
+  function fb_track () {
+    console.log("Preparing FB tracker.");
+    if ( typeof fbq("track", tag_params.fb_event,
+                    {content_name: tag_params.fb_name,
+                     content_category: tag_params.fb_category}
+                   ) === 'undefined') outbound_link();
+  }
+
+  function fb_or_link () {
+    if (track_type == GA_FB_TRACK) {
+      fb_track();
+    } else {
+      outbound_link();
+    }
+  }
+
+  function outbound_link() {
+    console.log("Redirecting to new link.");
+    if (open_type == OPEN_IN_NEW_TAB) {
+      window.open( url );
+    } else {
+      document.location = url;
+    }
+  }
+  
+  jQuery( document ).ready( function() {
+    jQuery(jquery_selector).attr("onclick", "track_control()");
+  })
+</script>
