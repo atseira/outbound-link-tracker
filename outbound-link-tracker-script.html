@@ -5,106 +5,103 @@
   GA_TRACK = "GA only";
   FB_TRACK = "FB only";
   GA_FB_TRACK = "GA and FB";
-
+  
   // ga_type choice
   GA_TYPE_GTAG = "gtag";
   GA_TYPE_GA = "ga";
-
+  
   // open_type choice
   OPEN_IN_NEW_TAB = "open link in a new tab";
   OPEN_IN_SAME_TAB = "open link in the same tab";
-
+  
   /**
     * Look variable names above
     */
-  track_type = FB_TRACK;
+  track_type = GA_FB_TRACK;
   ga_type = GA_TYPE_GA;
   open_type = OPEN_IN_NEW_TAB;
-
-  /**
-    * EXAMPLE
-    * By ID:
-    *   jquery_selector = "#<element's ID here>";
-    * By HREF:
-    *   jquery_selector = "a[href='<anchor's href here>']";
-    */
-  jquery_selector = "";
 
   /**
     * Good practice: fill all parameters as if there's GA & FB tracking
     * Every param can be filled with anything except if you want to use
     * FB Pixel Standard Events.
     */
-  var tag_params = {
-    ga_e_category: "Outbound link",
+  var outbound_link_1 = {
+    /**
+      * EXAMPLE
+      * By ID:
+      *   selector: "#<element's ID here>",
+      * By HREF:
+      *   selector: "a[href='<anchor's href here>']",
+      */
+    selector: "#element_id_example",
+    ga_e_category: "Outbound link 1",
     ga_e_action: "click",
-    ga_e_label: "Outbound link click",
-
+    ga_e_label: "Outbound link 1 click",
+    
     fb_event: "Lead", // FB standard events here
-    fb_name: "Outbound link click",
-    fb_category: "Outbound link"
+    fb_name: "Oubound link 1 click",
+    fb_category: "Outbound link 1",
+    // Copy "selector" value above into jQuery()
+    url: jQuery("#element_id_example").attr("href")
   }
 
-
   // Do not modify the code below at all without permission.
-
-  url = jQuery(jquery_selector).attr("href");
-
-  function track_control () {
+  function track_control (e) {
     console.log("You choose to track with ".concat(track_type, "."));
     if (track_type == FB_TRACK) {
-      fb_track();
+      fb_track(e);
     } else {
-      ga_track();
+      ga_track(e);
     }
   }
 
-  function ga_track () {
+  function ga_track (e) {
     console.log("Preparing GA tracker.");
     console.log("GA tracker: ".concat(ga_type, "."));
     if (ga_type == GA_TYPE_GTAG) {
-      gtag("event", tag_params.ga_e_action, {
-        "event_category": tag_params.ga_e_category,
-        "event_label": tag_params.ga_e_label,
+      gtag("event", e.ga_e_action, {
+        "event_category": e.ga_e_category,
+        "event_label": e.ga_e_label,
         "transport_type": "beacon",
-        "event_callback": fb_or_link()
+        "event_callback": fb_or_link(e)
       });
     } else {
-      ga("send", "event", tag_params.ga_e_category,
-         tag_params.ga_e_action, tag_params.ga_e_label, {
+      ga("send", "event", e.ga_e_category,
+         e.ga_e_action, e.ga_e_label, {
         "transport_type": "beacon",
-        "event_callback": fb_or_link()
+        "event_callback": fb_or_link(e)
       }
         );
     }
   }
 
-  function fb_track () {
+  function fb_track (e) {
     console.log("Preparing FB tracker.");
-    if ( typeof fbq("track", tag_params.fb_event,
-                    {content_name: tag_params.fb_name,
-                     content_category: tag_params.fb_category}
-                   ) === 'undefined') outbound_link();
+    if ( typeof fbq("track", e.fb_event,
+                    {content_name: e.fb_name,
+                     content_category: e.fb_category}
+                   ) === 'undefined') outbound_link(e);
   }
 
-  function fb_or_link () {
+  function fb_or_link (e) {
     if (track_type == GA_FB_TRACK) {
-      fb_track();
+      fb_track(e);
     } else {
-      outbound_link();
+      outbound_link(e);
     }
   }
 
-  function outbound_link() {
+  function outbound_link(e) {
     console.log("Redirecting to new link.");
     if (open_type == OPEN_IN_NEW_TAB) {
-      window.open( url );
+      window.open( e.url );
     } else {
-      document.location = url;
+      document.location = e.url;
     }
   }
-  
+
   jQuery( document ).ready( function() {
-    jQuery(jquery_selector).attr("onclick", "track_control()");
+    jQuery(outbound_link_1.selector).attr("onclick", "track_control(outbound_link_1)");
   })
 </script>
