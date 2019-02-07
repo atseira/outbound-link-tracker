@@ -1,0 +1,74 @@
+<script>
+  /**
+    * Good practice: fill all parameters as if there's GA & FB tracking
+    * Every param can be filled with anything except if you want to use
+    * FB Pixel Standard Events.
+    */
+
+  // TODO: change var name & label inside <brackets>
+  var outbound_link = {
+    ga_e_category: "<ga event category>",
+    ga_e_action: "<ga event action>",
+    ga_e_label: "<ga event label>",
+
+    fb_event: "<fb standard event>", // FB standard events here, e.g. "Lead"
+    fb_name: "<fb name>",
+    fb_category: "<fb category>",
+
+    url: "<url>",
+  }
+
+  // Do not modify the code below at all without permission.
+  function track_control(e) {
+    console.log("Looking for Google Analytics tracker: gtag or ga?")
+    if (typeof gtag !== 'undefined') {
+      console.log("Gtag tracker found, tracking outbound link...")
+      gtag("event", e.ga_e_action, {
+        "event_category": e.ga_e_category,
+        "event_label": e.ga_e_label,
+        "transport_type": "beacon",
+        "event_callback": fb_or_link(e)
+      });
+    } else if (typeof ga !== 'undefined') {
+      console.log("GA tracker found, tracking outbound link...")
+      ga("send", "event", e.ga_e_category,
+        e.ga_e_action, e.ga_e_label, {
+          "transport_type": "beacon",
+          "event_callback": fb_or_link(e)
+        });
+    } else {
+      console.log("No Google Analytics tracking found!")
+      fb_or_link(e);
+    }
+  }
+
+  function fb_or_link(e) {
+    console.log("Checking FB Pixel presence...")
+    if (typeof fbq !== 'undefined') {
+      console.log("FB Pixel found! Tracking...")
+      fb_track(e);
+    } else {
+      console.log("FB Pixel not found! Open link right away.")
+      outbound_link(e);
+    }
+  }
+
+  function fb_track(e) {
+    console.log("Preparing FB tracker.");
+    if (typeof fbq("track", e.fb_event,
+      {
+        content_name: e.fb_name,
+        content_category: e.fb_category
+      }
+    ) === 'undefined') outbound_link(e);
+  }
+
+  function outbound_link(e) {
+    console.log("Redirecting to new link.");
+    if (jQuery(e.selector).attr("target") == "_blank") {
+      window.open(e.url);
+    } else {
+      document.location = e.url;
+    }
+  }
+</script>
